@@ -312,6 +312,10 @@ for i, txt in enumerate(npv_results):
     txt = "{:,}".format(round(txt))
     plt.annotate(txt, (budgetting_confidence_policies[i], npv_results[i]), textcoords="offset points", xytext=(0, 10), ha='center')
 plt.xlim(0.45, 1)
+#change colors of the plot to grey instead of blue
+plt.rcParams['axes.prop_cycle'] = plt.cycler(color='grey')
+#increase the size of all the fonts in the plot
+plt.rcParams.update({'font.size': 16})
 plt.grid()		
 #plt.show()
 # create a square array with the information included in portfolio_results
@@ -320,6 +324,8 @@ solution_portfolios = np.array(portfolio_results)
 #plt.figure(2)
 fig, ax = plt.subplots()
 plt.imshow(solution_portfolios, cmap='binary', interpolation='nearest', vmin=0, vmax=1)
+#keep the colors of this plot as they are
+plt.rcParams['axes.prop_cycle'] = plt.cycler(color='b')
 plt.xlabel("Project", fontsize=12)
 plt.ylabel("Budgetting Confidence Policy", fontsize=12)
 plt.yticks(range(len(budgetting_confidence_policies)), budgetting_confidence_policies, fontsize=10)
@@ -355,13 +361,10 @@ plt.title("Histogram of the resulting costs obtained directly from MCS")
 #zoom x axis so that the histogram is more visible
 plt.xlim(min(pf_cost)-10, max(pf_cost)+10)
 #zoom y axis so that the histogram is more visible
-#plt.ylim(0, 10)
-#plt.show()print("costs:")
-print(pf_cost)
+#change colors of the plot to grey instead of blue
+plt.rcParams['axes.prop_cycle'] = plt.cycler(color='grey')
 #extract the maximum of the resulting costs
 maxcost = max(pf_cost)
-print("max cost:")
-print(maxcost)
 #count how many results were higher than maxbdgt
 count = 0
 for i in range(pf_cost.__len__()):
@@ -369,17 +372,6 @@ for i in range(pf_cost.__len__()):
         count = count + 1
 portfolio_risk = np.zeros(5)
 portfolio_risk[0] = (1-count/iterations)
-print("confidence that the portfolio does not exceed 3.800 Mio.€ :")
-print(portfolio_risk[0])
-#calculate mean, median, mode and standard deviation of the resulting costs
-print("mean:")
-print(np.mean(pf_cost))
-print("median:")
-print(np.median(pf_cost))
-print("mode:")
-print(st.mode(pf_cost))
-print("standard deviation:")
-print(np.std(pf_cost))
 
 # Correlation matrix to be used in the next mcs simulation
 cm109 = np.full((10, 10), 0.9)
