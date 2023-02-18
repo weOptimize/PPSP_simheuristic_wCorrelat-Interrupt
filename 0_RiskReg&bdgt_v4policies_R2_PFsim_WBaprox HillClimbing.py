@@ -64,8 +64,8 @@ def portfolio_totalbudget(portfolio):
 #defining the function that maximizes the net present value of a portfolio of projects, while respecting the budget constraint
 def maximize_npv():
     best_of_best = [0] * nrcandidates
-    exit_iter = 30
-    for i in range(5):
+    exit_iter = 10
+    for i in range(3):
         print(i)
         tested_portfolios = set()
         best_portfolio = [0] * nrcandidates
@@ -205,7 +205,7 @@ budgetedcosts = np.zeros((nrcandidates, len(budgetting_confidence_policies)))
 #initialize an array of standard deviations that is sized as far as nrcandidates
 stdevs = np.zeros((nrcandidates, 1))
 for i in range(nrcandidates):
-    iterations=10000
+    iterations=500
     #open ten different ODS files and store the results in a list after computing the CPM and MCS
     filename = "RND_Schedules/data_wb" + str(i+1) + ".ods"
     #print(filename)
@@ -312,8 +312,6 @@ for i, txt in enumerate(npv_results):
     txt = "{:,}".format(round(txt))
     plt.annotate(txt, (budgetting_confidence_policies[i], npv_results[i]), textcoords="offset points", xytext=(0, 10), ha='center')
 plt.xlim(0.45, 1)
-#change colors of the plot to grey instead of blue
-plt.rcParams['axes.prop_cycle'] = plt.cycler(color='grey')
 #increase the size of all the fonts in the plot
 plt.rcParams.update({'font.size': 16})
 plt.grid()		
@@ -324,12 +322,10 @@ solution_portfolios = np.array(portfolio_results)
 #plt.figure(2)
 fig, ax = plt.subplots()
 plt.imshow(solution_portfolios, cmap='binary', interpolation='nearest', vmin=0, vmax=1)
-#keep the colors of this plot as they are
-plt.rcParams['axes.prop_cycle'] = plt.cycler(color='b')
-plt.xlabel("Project", fontsize=12)
-plt.ylabel("Budgetting Confidence Policy", fontsize=12)
+plt.xlabel("Project", fontsize=16)
+plt.ylabel("Budgetting Confidence Policy", fontsize=16)
 plt.yticks(range(len(budgetting_confidence_policies)), budgetting_confidence_policies, fontsize=10)
-plt.xticks(np.arange(0, nrcandidates, 1), fontsize=10)
+plt.xticks(np.arange(0, nrcandidates, 1), fontsize=14)
 plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=True)
 
 for i, budget in enumerate(budgets):
@@ -361,8 +357,6 @@ plt.title("Histogram of the resulting costs obtained directly from MCS")
 #zoom x axis so that the histogram is more visible
 plt.xlim(min(pf_cost)-10, max(pf_cost)+10)
 #zoom y axis so that the histogram is more visible
-#change colors of the plot to grey instead of blue
-plt.rcParams['axes.prop_cycle'] = plt.cycler(color='grey')
 #extract the maximum of the resulting costs
 maxcost = max(pf_cost)
 #count how many results were higher than maxbdgt
