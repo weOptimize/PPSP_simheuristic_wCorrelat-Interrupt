@@ -67,7 +67,7 @@ def portfolio_totalbudget(portfolio):
 def maximize_npv():
     best_of_best = [0] * nrcandidates
     exit_iter = 25
-    for i in range(4):
+    for i in range(5):
         print(i)
         tested_portfolios = set()
         best_portfolio = [0] * nrcandidates
