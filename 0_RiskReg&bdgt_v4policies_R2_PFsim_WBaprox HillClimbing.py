@@ -66,7 +66,7 @@ def portfolio_totalbudget(portfolio):
 #defining the function that maximizes the net present value of a portfolio of projects, while respecting the budget constraint
 def maximize_npv():
     best_of_best = [0] * nrcandidates
-    exit_iter = 20
+    exit_iter = 25
     for i in range(4):
         print(i)
         tested_portfolios = set()
@@ -369,6 +369,8 @@ ax2.yaxis.set_visible(True)
 ax2.set_ylim(0, 1)
 # add grid to the plot following the y axis of the twin Axes object
 ax2.grid(axis='y')
+# add grid to the plot following the x axis of the original Axes object
+ax.grid(axis='x')
 # Add legend
 ax.legend(loc='center left')
 ax2.legend(loc='upper left')
@@ -502,7 +504,7 @@ pf_cost109 = pf_df109.sum(axis=1)
 #plt.figure(4)
 # Create a 2x2 subplot grid
 fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(8, 8))
-ax[0, 0].hist(pf_cost, bins=200, color = 'grey', range=(3000, 4500))
+ax[0, 0].hist(pf_cost, bins=200, color = 'grey', range=(3000, 4800))
 ax[0, 0].hist(pf_cost109, bins=200, color = 'black', histtype="step")
 
 #extract the maximum of the resulting costs
@@ -589,7 +591,7 @@ pf_df106 = df106 * chosen_portfolio
 pf_cost106 = pf_df106.sum(axis=1)
 #plot the histogram of the resulting costs as another frame inside figure 4
 #plt.figure(4)
-ax[0, 1].hist(pf_cost, bins=200, color = 'grey', range=(3000, 4500))
+ax[0, 1].hist(pf_cost, bins=200, color = 'grey', range=(3000, 4800))
 ax[0, 1].hist(pf_cost106, bins=200, color = 'black', histtype="step")
 
 #extract the maximum of the resulting costs
@@ -678,7 +680,7 @@ pf_df103 = df103 * chosen_portfolio
 pf_cost103 = pf_df103.sum(axis=1)
 #plot the histogram of the resulting costs
 #plt.figure(4)
-ax[1, 0].hist(pf_cost, bins=200, color = 'grey', range=(3000, 4500), label = 'uncorrelated histogram')
+ax[1, 0].hist(pf_cost, bins=200, color = 'grey', range=(3000, 4800), label = 'uncorrelated histogram')
 ax[1, 0].hist(pf_cost103, bins=200, color = 'black', histtype="step", label = 'correlated histogram')
 # Set the common legend
 fig.legend(loc='lower center', ncol=4)
@@ -768,7 +770,7 @@ pf_df10r = df10r * chosen_portfolio
 pf_cost10r = pf_df10r.sum(axis=1)
 #plot the histogram of the resulting costs
 #plt.figure(4)
-ax[1,1].hist(pf_cost, bins=200, color = 'grey', range=(3000, 4500))
+ax[1,1].hist(pf_cost, bins=200, color = 'grey', range=(3000, 4800))
 ax[1,1].hist(pf_cost10r, bins=200, color = 'black', histtype="step")
 ax[0, 0].set_title('Correlations: 0.9')
 ax[0, 1].set_title('Correlations: 0.6')
@@ -787,7 +789,6 @@ for i in range(pf_cost10r.__len__()):
         count = count + 1
 #array storing the portfolio risk not to exceed 3.800 Mio.€, as per-one risk units
 portfolio_risk[4] = 1-count/iterations
-
 
 #print(df0)
 #print(correlation_matrix0)
@@ -837,18 +838,34 @@ df_portfolio_risk = df_portfolio_risk.transpose()
 df_portfolio_risk.rename(columns={0:"0", 1:"0.9", 2:"0.6", 3:"0.3", 4:"random"}, inplace=True)
 #current_cols = df_portfolio_risk.columns
 print(df_portfolio_risk)
+
+
+
 # Plot the portfolio risks
 df_portfolio_risk.plot(kind='bar', title='Portfolio risks')
 # Format the bars so that they have different patterns in order to be more visible
-hatch_patterns = ['/', '\\', '|', '-', '+']
+colors = ['black', 'dimgrey', 'grey', 'darkgrey', 'lightgrey']
 fig, ax = plt.subplots()
 for i, d in enumerate(df_portfolio_risk.values[0]):
-    ax.bar(i, d, hatch=hatch_patterns[i], edgecolor='black', color='None')
+    ax.bar(i, d, edgecolor='black', color=colors[i])
 # Add y grid to the plot every 0.05
-plt.yticks(np.arange(0, 1.05, 0.05))
-# Add x labels to the plot
+plt.yticks(np.arange(0, 1.05, 0.1))
+## Add x labels to the plot
 plt.xticks(np.arange(5), df_portfolio_risk.columns)
+# Add y values to the plot
+for i, d in enumerate(df_portfolio_risk.values[0]):
+    plt.text(i-0.2, d+0.01, str(round(d,2)))
 plt.grid(axis='y')
+plt.show()
+
+#make sure no legend appears in the next plot
+plt.figure(12)
+plt.legend().set_visible(False)
+#heatmap of the correlation matrix cm10r
+sns.set(font_scale=1.15)
+sns.heatmap(cm10r, annot=True, cmap="Greys")
+
+
 plt.show()
 #*** execution time
 print("Execution time: %s milli-seconds" %((time.time() - start_time)* 1000))
