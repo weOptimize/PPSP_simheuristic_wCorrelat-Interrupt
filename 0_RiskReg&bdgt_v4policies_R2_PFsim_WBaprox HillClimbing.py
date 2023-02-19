@@ -20,12 +20,14 @@ mcs_results = []
 import numpy as np
 import pandas as pd
 import random
+import seaborn as sns
 from pandas_ods_reader import read_ods
 from operator import itemgetter
 import matplotlib.pyplot as plt 
 from scipy import stats as st
 from copulas.multivariate import GaussianMultivariate
 from scipy.stats import rv_continuous, rv_histogram, norm, uniform, multivariate_normal, beta
+
 
 from fitter import Fitter, get_common_distributions, get_distributions
 
@@ -64,8 +66,8 @@ def portfolio_totalbudget(portfolio):
 #defining the function that maximizes the net present value of a portfolio of projects, while respecting the budget constraint
 def maximize_npv():
     best_of_best = [0] * nrcandidates
-    exit_iter = 10
-    for i in range(3):
+    exit_iter = 20
+    for i in range(4):
         print(i)
         tested_portfolios = set()
         best_portfolio = [0] * nrcandidates
@@ -205,7 +207,7 @@ budgetedcosts = np.zeros((nrcandidates, len(budgetting_confidence_policies)))
 #initialize an array of standard deviations that is sized as far as nrcandidates
 stdevs = np.zeros((nrcandidates, 1))
 for i in range(nrcandidates):
-    iterations=500
+    iterations=10000
     #open ten different ODS files and store the results in a list after computing the CPM and MCS
     filename = "RND_Schedules/data_wb" + str(i+1) + ".ods"
     #print(filename)
@@ -302,7 +304,7 @@ budgets = [x[2] for x in solutions]
 
 #DESACTIVAR ALL THIS SI QUIERES MIRAR TODOS JUNTOS - HASTA PLT(SHOW)
 plt.figure(1)
-plt.scatter(budgetting_confidence_policies, npv_results)
+plt.scatter(budgetting_confidence_policies, npv_results, color='grey')
 #zoom in the plot so that the minumum value of the x axis is 0.5 and the maximum value of the x axis is 1
 plt.title("NPV vs Budgetting Confidence Policy")
 plt.xlabel("Budgetting Confidence Policy")
@@ -344,15 +346,38 @@ print(portfolio_var)
 print(portfolio_stdev)
 
 #extract the sixth portfolio included in array portfolio_results
-chosen_portfolio = portfolio_results[5]
+chosen_portfolio = portfolio_results[6]
 #multiply dataframe 0 by the chosen portfolio to reflect the effect of the projects that are chosen
 pf_df = df0 * chosen_portfolio
 #sum the rows of the new dataframe to calculate the total cost of the portfolio
 pf_cost = pf_df.sum(axis=1)
 
+fig, ax = plt.subplots()
+# title of the plot
+# ax.set_title('Monte Carlo Simulation of a candidate project')
+# Plot the histogram of the monte carlo simulation of the first project
+ax.hist(mcs_results[0], bins=200, color='grey', label='Histogram')
+# title of the x axis
+ax.set_xlabel('Cost in k€')
+# Create a twin Axes object that shares the x-axis of the original Axes object
+ax2 = ax.twinx()
+# Plot the histogram of the monte carlo simulation of the first project in the form of a cumulative distribution function
+ax2.hist(mcs_results[0], bins=200, color='black', cumulative=True, histtype='step', density=True, label='Cumulative Distribution')
+# Set the y-axis of the twin Axes object to be visible
+ax2.yaxis.set_visible(True)
+#set maximum value of the y axis of the twin Axes object to 1
+ax2.set_ylim(0, 1)
+# add grid to the plot following the y axis of the twin Axes object
+ax2.grid(axis='y')
+# Add legend
+ax.legend(loc='center left')
+ax2.legend(loc='upper left')
+
+
+
 #plot the histogram of the resulting costs
-plt.figure(3)
-plt.hist(pf_cost, bins=200)
+plt.figure(4)
+plt.hist(pf_cost, bins=200, color = 'grey' )
 plt.title("Histogram of the resulting costs obtained directly from MCS")
 #zoom x axis so that the histogram is more visible
 plt.xlim(min(pf_cost)-10, max(pf_cost)+10)
@@ -382,7 +407,7 @@ np.fill_diagonal(cm103, 1)
 
 # *********Correlation matrix with random values between 0 and 1, but positive semidefinite***************
 # Generate a random symmetric matrix
-A = np.random.randn(10, 10)
+A = np.random.rand(10, 10)
 A = (A + A.T) / 2
 # Compute the eigenvalues and eigenvectors of the matrix
 eigenvalues, eigenvectors = np.linalg.eigh(A)
@@ -474,16 +499,12 @@ pf_df109 = df109 * chosen_portfolio
 #sum the rows of the new dataframe to calculate the total cost of the portfolio
 pf_cost109 = pf_df109.sum(axis=1)
 #plot the histogram of the resulting costs
-plt.figure(5)
-plt.hist(pf_cost109, bins=200)
-plt.title("Histogram of the resulting costs simulating via correlation matrix")
-#zoom x axis so that the histogram is more visible
-plt.xlim(min(pf_cost109)-10, max(pf_cost109)+10)
-#zoom y axis so that the histogram is more visible
-#plt.ylim(0, 10)
-#plt.show()
-# print("costs:")
-print(pf_cost109)
+#plt.figure(4)
+# Create a 2x2 subplot grid
+fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(8, 8))
+ax[0, 0].hist(pf_cost, bins=200, color = 'grey', range=(3000, 4500))
+ax[0, 0].hist(pf_cost109, bins=200, color = 'black', histtype="step")
+
 #extract the maximum of the resulting costs
 maxcost109 = max(pf_cost109)
 print("max cost:")
@@ -495,17 +516,7 @@ for i in range(pf_cost109.__len__()):
         count = count + 1
 #array storing the portfolio risk not to exceed 3.800 Mio.€, as per-one risk units
 portfolio_risk[1] = 1-count/iterations
-print("confidence that the portfolio does not exceed 3.800 Mio.€ :")
-#print(portfolio_risk[1])
-#calculate mean, median, mode and standard deviation of the resulting costs
-print("mean:")
-print(np.mean(pf_cost109))
-print("median:")
-print(np.median(pf_cost109))
-print("mode:")
-print(st.mode(pf_cost109))
-print("standard deviation:")
-print(np.std(pf_cost109))
+
 
 #initialize dataframe df106 with size nrcandidates x iterations
 df106 = pd.DataFrame(np.zeros((iterations, nrcandidates)))
@@ -571,25 +582,16 @@ df106[7] = rand_P8
 df106[8] = rand_P9
 df106[9] = rand_P10
 df106.rename(columns={0:"P01", 1:"P02", 2:"P03", 3:"P04", 4:"P05", 5:"P06", 6:"P07", 7:"P08", 8:"P09", 9:"P10"}, inplace=True)
-#print('df1_09')
-#print(df1_09)
-print('df106')
-print(df106)
+
 #multiply dataframe 106 by the chosen portfolio to reflect the effect of the projects that are chosen
 pf_df106 = df106 * chosen_portfolio
 #sum the rows of the new dataframe to calculate the total cost of the portfolio
 pf_cost106 = pf_df106.sum(axis=1)
-#plot the histogram of the resulting costs
-plt.figure(6)
-plt.hist(pf_cost106, bins=200)
-plt.title("Histogram of the resulting costs simulating via correlation matrix")
-#zoom x axis so that the histogram is more visible
-plt.xlim(min(pf_cost106)-10, max(pf_cost106)+10)
-#zoom y axis so that the histogram is more visible
-#plt.ylim(0, 10)
-#plt.show()
-# print("costs:")
-print(pf_cost106)
+#plot the histogram of the resulting costs as another frame inside figure 4
+#plt.figure(4)
+ax[0, 1].hist(pf_cost, bins=200, color = 'grey', range=(3000, 4500))
+ax[0, 1].hist(pf_cost106, bins=200, color = 'black', histtype="step")
+
 #extract the maximum of the resulting costs
 maxcost106 = max(pf_cost106)
 print("max cost:")
@@ -601,17 +603,6 @@ for i in range(pf_cost106.__len__()):
         count = count + 1
 #array storing the portfolio risk not to exceed 3.800 Mio.€, as per-one risk units
 portfolio_risk[2] = 1-count/iterations
-print("confidence that the portfolio does not exceed 3.800 Mio.€ :")
-#print(portfolio_risk[2])
-#calculate mean, median, mode and standard deviation of the resulting costs
-print("mean:")
-print(np.mean(pf_cost106))
-print("median:")
-print(np.median(pf_cost106))
-print("mode:")
-print(st.mode(pf_cost106))
-print("standard deviation:")
-print(np.std(pf_cost106))
 
 #initialize dataframe df103 with size nrcandidates x iterations
 df103 = pd.DataFrame(np.zeros((iterations, nrcandidates)))
@@ -686,16 +677,13 @@ pf_df103 = df103 * chosen_portfolio
 #sum the rows of the new dataframe to calculate the total cost of the portfolio
 pf_cost103 = pf_df103.sum(axis=1)
 #plot the histogram of the resulting costs
-plt.figure(7)
-plt.hist(pf_cost103, bins=200)
-plt.title("Histogram of the resulting costs simulating via correlation matrix")
-#zoom x axis so that the histogram is more visible
-plt.xlim(min(pf_cost103)-10, max(pf_cost103)+10)
-#zoom y axis so that the histogram is more visible
-#plt.ylim(0, 10)
-# plt.show()
-# print("costs:")
-print(pf_cost103)
+#plt.figure(4)
+ax[1, 0].hist(pf_cost, bins=200, color = 'grey', range=(3000, 4500), label = 'uncorrelated histogram')
+ax[1, 0].hist(pf_cost103, bins=200, color = 'black', histtype="step", label = 'correlated histogram')
+# Set the common legend
+fig.legend(loc='lower center', ncol=4)
+
+
 #extract the maximum of the resulting costs
 maxcost103 = max(pf_cost103)
 print("max cost:")
@@ -707,17 +695,7 @@ for i in range(pf_cost103.__len__()):
         count = count + 1
 #array storing the portfolio risk not to exceed 3.800 Mio.€, as per-one risk units
 portfolio_risk[3] = 1-count/iterations
-print("confidence that the portfolio does not exceed 3.800 Mio.€ :")
-print(portfolio_risk[3])
-#calculate mean, median, mode and standard deviation of the resulting costs
-print("mean:")
-print(np.mean(pf_cost103))
-print("median:")
-print(np.median(pf_cost103))
-print("mode:")
-print(st.mode(pf_cost103))
-print("standard deviation:")
-print(np.std(pf_cost103))
+
 
 #initialize dataframe df10r with size nrcandidates x iterations
 df10r = pd.DataFrame(np.zeros((iterations, nrcandidates)))
@@ -783,25 +761,21 @@ df10r[7] = rand_P8
 df10r[8] = rand_P9
 df10r[9] = rand_P10
 df10r.rename(columns={0:"P01", 1:"P02", 2:"P03", 3:"P04", 4:"P05", 5:"P06", 6:"P07", 7:"P08", 8:"P09", 9:"P10"}, inplace=True)
-#print('df1_09')
-#print(df1_09)
-print('df10r')
-print(df10r)
+
 #multiply dataframe 10r by the chosen portfolio to reflect the effect of the projects that are chosen
 pf_df10r = df10r * chosen_portfolio
 #sum the rows of the new dataframe to calculate the total cost of the portfolio
 pf_cost10r = pf_df10r.sum(axis=1)
 #plot the histogram of the resulting costs
-plt.figure(8)
-plt.hist(pf_cost10r, bins=200)
-plt.title("Histogram of the resulting costs simulating via correlation matrix")
-#zoom x axis so that the histogram is more visible
-plt.xlim(min(pf_cost10r)-10, max(pf_cost10r)+10)
-#zoom y axis so that the histogram is more visible
-#plt.ylim(0, 10)
-#plt.show()
-# print("costs:")
-print(pf_cost10r)
+#plt.figure(4)
+ax[1,1].hist(pf_cost, bins=200, color = 'grey', range=(3000, 4500))
+ax[1,1].hist(pf_cost10r, bins=200, color = 'black', histtype="step")
+ax[0, 0].set_title('Correlations: 0.9')
+ax[0, 1].set_title('Correlations: 0.6')
+ax[1, 0].set_title('Correlations: 0.3')
+ax[1, 1].set_title('Random Correlations')
+
+
 #extract the maximum of the resulting costs
 maxcost10r = max(pf_cost10r)
 print("max cost:")
@@ -813,50 +787,42 @@ for i in range(pf_cost10r.__len__()):
         count = count + 1
 #array storing the portfolio risk not to exceed 3.800 Mio.€, as per-one risk units
 portfolio_risk[4] = 1-count/iterations
-print("confidence that the portfolio does not exceed 3.800 Mio.€ :")
-#print(portfolio_risk[4])
-#calculate mean, median, mode and standard deviation of the resulting costs
-print("mean:")
-print(np.mean(pf_cost10r))
-print("median:")
-print(np.median(pf_cost10r))
-print("mode:")
-print(st.mode(pf_cost10r))
-print("standard deviation:")
-print(np.std(pf_cost10r))
+
 
 #print(df0)
 #print(correlation_matrix0)
 # plot the scatter matrix
-pd.plotting.scatter_matrix(df0, alpha=0.2, figsize=(6, 6), diagonal='kde')
+pd.plotting.scatter_matrix(df0, alpha=0.2, figsize=(6, 6), diagonal='kde', color='grey', density_kwds={'color': 'grey'})
+#plot the scatter matrix of df0 with seaborn pairplot function with grey color and a diagonal with a kde plot
+#sns.pairplot(df0, diag_kind="kde", palette="Greys")
 # add title and axis labels
 plt.suptitle('Correlation matrix of the MCS results where all projects are fully independent (in k€)')
 plt.xlabel('Projects and cost in k€')
 plt.ylabel('Projects and cost in k€')
 #plt.show()
 # plot the scatter matrix
-pd.plotting.scatter_matrix(df109, alpha=0.2, figsize=(6, 6), diagonal='kde')
+pd.plotting.scatter_matrix(df109, alpha=0.2, figsize=(6, 6), diagonal='kde', color='grey', density_kwds={'color': 'grey'})
 # add title and axis labels
 plt.suptitle('Correlation matrix of the MCS results where all projects are correlated by 0.9')
 plt.xlabel('Projects and cost in k€')
 plt.ylabel('Projects and cost in k€')
 #plt.show()
 # plot the scatter matrix
-pd.plotting.scatter_matrix(df106, alpha=0.2, figsize=(6, 6), diagonal='kde')
+pd.plotting.scatter_matrix(df106, alpha=0.2, figsize=(6, 6), diagonal='kde', color='grey', density_kwds={'color': 'grey'})
 # add title and axis labels
 plt.suptitle('Correlation matrix of the MCS results where all projects are correlated by 0.6')
 plt.xlabel('Projects and cost in k€')
 plt.ylabel('Projects and cost in k€')
 #plt.show()
 # plot the scatter matrix
-pd.plotting.scatter_matrix(df103, alpha=0.2, figsize=(6, 6), diagonal='kde')
+pd.plotting.scatter_matrix(df103, alpha=0.2, figsize=(6, 6), diagonal='kde', color='grey', density_kwds={'color': 'grey'})
 # add title and axis labels
 plt.suptitle('Correlation matrix of the MCS results where all projects are correlated by 0.3')
 plt.xlabel('Projects and cost in k€')
 plt.ylabel('Projects and cost in k€')
 #plt.show()
 # plot the scatter matrix
-pd.plotting.scatter_matrix(df10r, alpha=0.2, figsize=(6, 6), diagonal='kde')
+pd.plotting.scatter_matrix(df10r, alpha=0.2, figsize=(6, 6), diagonal='kde', color='grey', density_kwds={'color': 'grey'})
 # add title and axis labels
 plt.suptitle('Correlation matrix of the MCS results where all projs are randomly correlated')
 plt.xlabel('Projects and cost in k€')
@@ -870,7 +836,6 @@ df_portfolio_risk = df_portfolio_risk.transpose()
 #rename the columns of the dataframe
 df_portfolio_risk.rename(columns={0:"0", 1:"0.9", 2:"0.6", 3:"0.3", 4:"random"}, inplace=True)
 #current_cols = df_portfolio_risk.columns
-#df_portfolio_risk.rename(columns={current_cols[0]:"0", current_cols[1]:"0.9", current_cols[2]:"0.6", current_cols[3]:"0.3", current_cols[4]:"random"}, inplace=True)
 print(df_portfolio_risk)
 # Plot the portfolio risks
 df_portfolio_risk.plot(kind='bar', title='Portfolio risks')
@@ -881,6 +846,8 @@ for i, d in enumerate(df_portfolio_risk.values[0]):
     ax.bar(i, d, hatch=hatch_patterns[i], edgecolor='black', color='None')
 # Add y grid to the plot every 0.05
 plt.yticks(np.arange(0, 1.05, 0.05))
+# Add x labels to the plot
+plt.xticks(np.arange(5), df_portfolio_risk.columns)
 plt.grid(axis='y')
 plt.show()
 #*** execution time
