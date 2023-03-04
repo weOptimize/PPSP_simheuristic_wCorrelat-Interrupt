@@ -269,6 +269,8 @@ print(betaparams)
 df0 = pd.DataFrame(data=mcs_results).T
 df0.rename(columns={0:"P01", 1:"P02", 2:"P03", 3:"P04", 4:"P05", 5:"P06", 6:"P07", 7:"P08", 8:"P09", 9:"P10"}, inplace=True)
 correlation_matrix0 = df0.corr()
+#*** execution time
+print("Execution time after SIMULATION step: %s milli-seconds" %((time.time() - start_time)* 1000))
 
 for i in range(len(budgetting_confidence_policies)):
     #I take the column of bdgtperproject_matrix that corresponds to the budgetting confidence policy
@@ -301,6 +303,9 @@ npv_results = [round(x[1], 0) for x in solutions]
 portfolio_results = [x[0] for x in solutions]
 #separate the budgets taken from the solutions list
 budgets = [x[2] for x in solutions]
+
+#*** execution time
+print("Execution time after OPTIMIZATION step: %s milli-seconds" %((time.time() - start_time)* 1000))
 
 #DESACTIVAR ALL THIS SI QUIERES MIRAR TODOS JUNTOS - HASTA PLT(SHOW)
 plt.figure(1)
