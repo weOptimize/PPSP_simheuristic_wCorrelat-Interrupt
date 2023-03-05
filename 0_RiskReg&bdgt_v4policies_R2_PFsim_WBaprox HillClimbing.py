@@ -66,7 +66,7 @@ def portfolio_totalbudget(portfolio):
 #defining the function that maximizes the net present value of a portfolio of projects, while respecting the budget constraint
 def maximize_npv():
     best_of_best = [0] * nrcandidates
-    exit_iter = 10
+    exit_iter = 15
     for i in range(4):
         print(i)
         tested_portfolios = set()
