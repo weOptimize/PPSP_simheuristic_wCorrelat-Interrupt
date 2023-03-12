@@ -33,7 +33,7 @@ from fitter import Fitter, get_common_distributions, get_distributions
 
 
 #import created scripts:
-from task_rnd_triang_with_interrupts_stdev_new_R2 import *
+from task_rnd_triang_NO_interrupts_stdev_new_R2 import *
 from survival_value_extractor import *
 
 
