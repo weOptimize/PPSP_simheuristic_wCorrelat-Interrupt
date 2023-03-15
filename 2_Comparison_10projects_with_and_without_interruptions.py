@@ -51,13 +51,7 @@ correlation_matrix = []
 
 
 
-#defining the function that calculates the total budget of a portfolio of projects
-def portfolio_totalbudget(portfolio):
-    totalbudget_portfolio = 0
-    for i in range(nrcandidates):
-        if portfolio[i] == 1:
-            totalbudget_portfolio += bdgtperproject[i]
-    return totalbudget_portfolio
+
 
 
 #defining the function that, for each budgetting confidence policy, computes the budgeted duration
