@@ -7,3 +7,4 @@ Our proposal combines Montecarlo Simulation with critical path analysis, queuing
 This code includes an experiment at different levels of confidence set by company policies to limit
 project risk, and different levels of project risk correlations, highlighting that portfolio recommendations change
 with different confidence levels and that correlations increase the portfolio risk.
+For a more detailed explanation, you can read our related paper in the Journal Computers & Industrial Engineering. [DOI:10.1016/j.cie.2024.110694] (http://dx.doi.org/10.1016/j.cie.2024.110694 "DOI:10.1016/j.cie.2024.110694") 
